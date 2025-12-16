@@ -2,19 +2,148 @@
 //
 
 #include <iostream>
+using namespace std;
+
+const int SIZE = 3;
+
+// Board states
+enum BoardState { PLAY, X_WIN, O_WIN, TIE };
+enum CheckResult { SPACE_LEFT, NO_SPACE, WINNER };
+
+// Function prototypes
+void initializeBoard(char board[SIZE][SIZE]);
+void displayBoard(char board[SIZE][SIZE]);
+void getLocation(char board[SIZE][SIZE], int& row, int& col);
+void placeToken(char board[SIZE][SIZE], char token);
+CheckResult checkForWinner(char board[SIZE][SIZE], char token);
+BoardState getBoardState(char board[SIZE][SIZE], char token);
 
 int main()
 {
-    std::cout << "Hello World!\n";
+    char board[SIZE][SIZE];
+    char player1 = 'X';
+    char player2 = 'O';
+    BoardState boardState = PLAY;
+
+    initializeBoard(board);
+    displayBoard(board);
+
+    while (boardState == PLAY)
+    {
+        cout << "\nPlayer 1's turn\n";
+        placeToken(board, player1);
+        displayBoard(board);
+        boardState = getBoardState(board, player1);
+
+        if (boardState != PLAY)
+            break;
+
+        cout << "\nPlayer 2's turn\n";
+        placeToken(board, player2);
+        displayBoard(board);
+        boardState = getBoardState(board, player2);
+    }
+
+    if (boardState == X_WIN)
+        cout << "\nPlayer 1 wins!\n";
+    else if (boardState == O_WIN)
+        cout << "\nPlayer 2 wins!\n";
+    else
+        cout << "\nIt's a tie!\n";
+
+    return 0;
 }
 
-// Run program: Ctrl + F5 or Debug > Start Without Debugging menu
-// Debug program: F5 or Debug > Start Debugging menu
+// ================= FUNCTIONS =================
 
-// Tips for Getting Started: 
-//   1. Use the Solution Explorer window to add/manage files
-//   2. Use the Team Explorer window to connect to source control
-//   3. Use the Output window to see build output and other messages
-//   4. Use the Error List window to view errors
-//   5. Go to Project > Add New Item to create new code files, or Project > Add Existing Item to add existing code files to the project
-//   6. In the future, to open this project again, go to File > Open > Project and select the .sln file
+void initializeBoard(char board[SIZE][SIZE])
+{
+    for (int r = 0; r < SIZE; r++)
+        for (int c = 0; c < SIZE; c++)
+            board[r][c] = '*';
+}
+
+void displayBoard(char board[SIZE][SIZE])
+{
+    cout << "\n  1 2 3\n";
+    for (int r = 0; r < SIZE; r++)
+    {
+        cout << r + 1 << " ";
+        for (int c = 0; c < SIZE; c++)
+            cout << board[r][c] << " ";
+        cout << endl;
+    }
+}
+
+void getLocation(char board[SIZE][SIZE], int& row, int& col)
+{
+    do
+    {
+        cout << "Enter row (1-3): ";
+        cin >> row;
+        cout << "Enter column (1-3): ";
+        cin >> col;
+
+        row--;
+        col--;
+
+    } while (row < 0 || row >= SIZE ||
+        col < 0 || col >= SIZE ||
+        board[row][col] != '*');
+}
+
+void placeToken(char board[SIZE][SIZE], char token)
+{
+    int row, col;
+    getLocation(board, row, col);
+    board[row][col] = token;
+}
+
+CheckResult checkForWinner(char board[SIZE][SIZE], char token)
+{
+    // Rows & columns
+    for (int i = 0; i < SIZE; i++)
+    {
+        if (board[i][0] == token &&
+            board[i][1] == token &&
+            board[i][2] == token)
+            return WINNER;
+
+        if (board[0][i] == token &&
+            board[1][i] == token &&
+            board[2][i] == token)
+            return WINNER;
+    }
+
+    // Diagonals
+    if (board[0][0] == token &&
+        board[1][1] == token &&
+        board[2][2] == token)
+        return WINNER;
+
+    if (board[0][2] == token &&
+        board[1][1] == token &&
+        board[2][0] == token)
+        return WINNER;
+
+    // Check for space left
+    for (int r = 0; r < SIZE; r++)
+        for (int c = 0; c < SIZE; c++)
+            if (board[r][c] == '*')
+                return SPACE_LEFT;
+
+    return NO_SPACE;
+}
+
+BoardState getBoardState(char board[SIZE][SIZE], char token)
+{
+    CheckResult result = checkForWinner(board, token);
+
+    if (result == WINNER)
+        return (token == 'X') ? X_WIN : O_WIN;
+    else if (result == NO_SPACE)
+        return TIE;
+
+    return PLAY;
+}
+
